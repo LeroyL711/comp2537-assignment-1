@@ -15,7 +15,7 @@ const app = express();
 const Joi = require("joi");
 
 
-const expireTime = 24 * 60 * 60 * 1000; //expires after 1 day  (hours * minutes * seconds * millis)
+const expireTime = 60 * 60 * 1000; //expires after 1 hour (minutes * seconds * millis)
 
 /* secret information section */
 const mongodb_host = process.env.MONGODB_HOST;
@@ -93,38 +93,6 @@ app.get('/nosql-injection', async (req, res) => {
     res.send(`<h1>Hello ${username}</h1>`);
 });
 
-app.get('/about', (req, res) => {
-    var color = req.query.color;
-
-    res.send("<h1 style='color:" + color + ";'>Patrick Guichon</h1>");
-});
-
-app.get('/contact', (req, res) => {
-    var missingEmail = req.query.missing;
-    var html = `
-        email address:
-        <form action='/submitEmail' method='post'>
-            <input name='email' type='text' placeholder='email'>
-            <button>Submit</button>
-        </form>
-    `;
-    if (missingEmail) {
-        html += "<br> email is required";
-    }
-    res.send(html);
-});
-
-app.post('/submitEmail', (req, res) => {
-    var email = req.body.email;
-    if (!email) {
-        res.redirect('/contact?missing=1');
-    }
-    else {
-        res.send("Thanks for subscribing with your email: " + email);
-    }
-});
-
-
 app.get('/signup', (req, res) => {
     var html = `
     create user
@@ -164,23 +132,13 @@ app.post('/signupSubmit', async (req, res) => {
         });
 
     const validationResult = schema.validate({ name, email, password });
+    
     if (validationResult.error != null) {
         let errorMsg = validationResult.error.message;
         console.log(validationResult.error);
-        if (errorMsg.includes("name")) {
-            var html = `
-            Please enter a valid name.
-            <br> <a href="/signup">Try Again</a>`;
-        } else if (errorMsg.includes("email")) {
-            var html = `
-        Please enter a valid email.
+        var html = `
+        ${errorMsg}.
         <br> <a href="/signup">Try Again</a>`;
-        } else if (errorMsg.includes("password")) {
-            var html = `
-        Please enter a valid password.
-        <br> <a href="/signup">Try Again</a>`;
-        }
-
         res.send(html);
         return;
     }
@@ -200,6 +158,7 @@ app.post('/loginSubmit', async (req, res) => {
 
     const schema = Joi.string().max(20).required();
     const validationResult = schema.validate(email);
+
     if (validationResult.error != null) {
         console.log(validationResult.error);
         res.redirect("/login");
@@ -212,6 +171,7 @@ app.post('/loginSubmit', async (req, res) => {
         console.log("user not found");
         var html = `Invalid email/password combination.
         <br><a href='/login'>Try Again </a>`
+        res.send(html);
         return;
     }
     if (await bcrypt.compare(password, result[0].password)) {
@@ -253,7 +213,6 @@ app.get('/members', (req, res) => {
     res.send(html);
 })
 
-
 app.get('/logout', (req, res) => {
     req.session.destroy();
     var html = `
@@ -266,23 +225,6 @@ app.get('/logout', (req, res) => {
     res.send(html);
 
 });
-
-
-app.get('/cat/:id', (req, res) => {
-
-    var cat = req.params.id;
-
-    if (cat == 1) {
-        res.send("Fluffy: <img src='/fluffy.gif' style='width:250px;'>");
-    }
-    else if (cat == 2) {
-        res.send("Socks: <img src='/socks.gif' style='width:250px;'>");
-    }
-    else {
-        res.send("Invalid cat id: " + cat);
-    }
-});
-
 
 app.use(express.static(__dirname + "/public"));
 
