@@ -15,7 +15,7 @@ const app = express();
 const Joi = require("joi");
 
 
-const expireTime = 60 * 60 * 1000; //expires after 1 hour (minutes * seconds * millis)
+const expireTime = (60 * 60 * 1000); //expires after 1 hour (minutes * seconds * millis)
 
 /* secret information section */
 const mongodb_host = process.env.MONGODB_HOST;
@@ -215,14 +215,7 @@ app.get('/members', (req, res) => {
 
 app.get('/logout', (req, res) => {
     req.session.destroy();
-    var html = `
-    You are logged out.
-    <script>
-        setTimeout(function (){
-            window.location.href = '/';}, 2000);
-    </script>        
-        `;
-    res.send(html);
+    res.redirect('/');
 
 });
 
