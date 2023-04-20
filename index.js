@@ -149,6 +149,7 @@ app.post('/signupSubmit', async (req, res) => {
     console.log("Inserted user");
     req.session.name = name;
     req.session.authenticated = true;
+    req.session.cookie.maxAge = expireTime;
     res.redirect("/members");
 });
 
